@@ -47,12 +47,13 @@ class Game:
             return pack_v(As, Bs)
         self.pdf = pdf
 
-    def plot(self, ax1, ax2 ): 
+    def plot(self, ax1, ax2, ax3):
         x1 = np.linspace(self.x_range[0], self.x_range[-1], 1000)
         y1 = self.Dk(x1, self.A, self.B)
         ax1.plot(x1,y1, label='Dk')
         
         ax1.bar(self.x_range, self.Ns, align='center', label='experiment', alpha=0.7)
+        ax1.legend()
         
         npts = 200
         x = np.linspace(0.1,3, npts)
@@ -64,6 +65,18 @@ class Game:
 
         levels = np.linspace(LL.max()+log(0.1), LL.max()+log(0.9), 5)
         ax2.contour(xx,yy,LL,levels)
+
+        LL -= LL.max()
+        pp = exp(LL)
+        unit2 = x[1]-x[0]
+        y3 = normalize(np.sum(pp, axis=0), unit2) 
+        y4 = normalize(np.sum(pp, axis=1), unit2) 
+        ind = np.abs(y-self.B).argmin()  
+        y5 = normalize(pp[ind,:], unit2)
+        ax3.plot(x, y3, label='P(A|{Nk},I)')
+        ax3.plot(x, y4, label='P(B|{Nk},I)')
+        ax3.plot(x, y5, '--', label='P(A|B,{Nk},I)')
+        ax3.legend()
      
         return fig 
 
@@ -71,9 +84,9 @@ class Game:
 
 A = 1
 B = 2
-n0 = 35
+n0 = 100
 x0 = 0
-width = 12
+width = 5
 omega = 2.12
 x_range = np.arange(x0-width, x0+width+1)
 
@@ -81,9 +94,8 @@ game = Game(A,B,n0,x0,omega,x_range)
 game.recording()
 
 
-fig, axes = plt.subplots(1,2, figsize=(8,4) )
-ax1, ax2 = axes
-game.plot(ax1, ax2)
+fig, axes = plt.subplots(1,3, figsize=(12,4) )
+ax1, ax2, ax3 = axes
+game.plot(ax1, ax2, ax3)
 
-fig.legend()
 plt.show(fig)
